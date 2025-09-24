@@ -84,7 +84,96 @@ def add_student():
         ])
 
     print(" Student added successfully!")    
-   
+
+def update_student():
+    print("\n--- Update Student Records ---")
+    roll = input("Enter Roll No of student to update: ").strip()
+
+    updated = False
+    rows = []
+
+    
+    with open(CSV_FILE, "r") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if row["Roll_No"] == roll:
+                print(f" Found Student: {row['Name']} (Roll {row['Roll_No']})")
+                print("Current Attendance:", row["Attendance_%"])
+                print("Current Marks:", row["Mid1_Marks"], row["Mid2_Marks"], row["Quiz_Marks"], row["Final_Marks"])
+
+                print("\nWhat do you want to update?")
+                print("1. Attendance")
+                print("2. Marks")
+                choice = input("Enter choice: ")
+
+                if choice == "1":
+                    new_att = input("Enter new Attendance %: ")
+                    try:
+                        new_att = float(new_att)
+                        if 0 <= new_att <= 100:
+                            print(f"Old Attendance: {row['Attendance_%']} → New: {new_att}")
+                            row["Attendance_%"] = str(new_att)
+                            updated = True
+                        else:
+                            print(" Attendance must be between 0-100.")
+                    except:
+                        print(" Invalid number.")
+
+                elif choice == "2":
+                    for exam in ["Mid1_Marks", "Mid2_Marks", "Quiz_Marks", "Final_Marks"]:
+                        new_mark = input(f"Enter new {exam} (leave blank to keep {row[exam]}): ")
+                        if new_mark.strip() != "":
+                            try:
+                                new_mark = float(new_mark)
+                                if 0 <= new_mark <= 100:
+                                    print(f"Old {exam}: {row[exam]} → New: {new_mark}")
+                                    row[exam] = str(new_mark)
+                                    updated = True
+                                else:
+                                    print(" Marks must be 0-100.")
+                            except:
+                                print(" Invalid number.")
+                else:
+                    print(" Invalid choice!")
+
+            rows.append(row)
+
+    
+    if updated:
+        with open(CSV_FILE, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=COLUMNS)
+            writer.writeheader()
+            writer.writerows(rows)
+        print(" Record updated successfully!")
+    else:
+        print(" No updates made (student not found or invalid input).")
+
+
+def lookup_student():
+    print("\n Lookup Student ")
+    search = input("Enter Roll No or Name: ").strip()
+
+    found = False
+    with open(CSV_FILE, "r") as f:
+        reader = csv.DictReader(f)
+        results = []
+        for row in reader:
+            
+            if row["Roll_No"] == search:
+                results = [row]
+                found = True
+                break
+            elif search.lower() in row["Name"].lower():
+                results.append(row)
+                found = True
+
+    if found:
+        print("\n Search Results ")
+        for r in results:
+            print(r)
+    else:
+        print(" No student found with that Roll No or Name.")
+
 
 def clerk_menu():
     while True:
@@ -92,7 +181,7 @@ def clerk_menu():
         print("1. Add New Student")
         print("2. Delete Student")
         print("3. Export Backup")
-        print("0. Back to Main Menu")
+        print("4. Back to Main Menu")
         choice = input("Enter choice: ")
 
         if choice == "1":
@@ -102,7 +191,7 @@ def clerk_menu():
             print(" Delete Student Function")
         elif choice == "3":
             print(" Export Backup Function")
-        elif choice == "0":
+        elif choice == "4":
             break
         else:
             print("Invalid choice!")
@@ -119,8 +208,10 @@ def teacher_menu():
 
         if choice == "1":
             print(" Lookup Student Function")
+            lookup_student()
         elif choice == "2":
             print(" Update Records Function")
+            update_student()  
         elif choice == "3":
             print(" Generate Report Function")
         elif choice == "4":
