@@ -85,8 +85,49 @@ def add_student():
 
     print(" Student added successfully!")    
 
+def delete_student():
+    print("\n  Delete Student ")
+    roll = input("Enter Roll No of student to delete: ").strip()
+
+    found = False
+    rows = []
+    deleted_row = None
+
+    
+    with open(CSV_FILE, "r") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if row["Roll_No"] == roll:
+                print(f" Found Student: {row['Name']} (Roll {row['Roll_No']})")
+                confirm = input("Are you sure you want to delete this student? (Y/N): ")
+                if confirm.lower() == "y":
+                    deleted_row = row
+                    found = True
+                    continue  
+            rows.append(row)
+
+    if found:
+
+        with open(CSV_FILE, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=COLUMNS)
+            writer.writeheader()
+            writer.writerows(rows)
+
+
+        if deleted_row:
+            file_exists = os.path.exists(DELETED_FILE)
+            with open(DELETED_FILE, "a", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=COLUMNS)
+                if not file_exists:
+                    writer.writeheader()
+                writer.writerow(deleted_row)
+
+        print(" Student deleted and moved to students_deleted.csv")
+    else:
+        print(" Student not found or deletion cancelled.")
+
 def update_student():
-    print("\n--- Update Student Records ---")
+    print("\n Update Student Records ")
     roll = input("Enter Roll No of student to update: ").strip()
 
     updated = False
@@ -189,6 +230,7 @@ def clerk_menu():
             add_student()
         elif choice == "2":
             print(" Delete Student Function")
+            delete_student()
         elif choice == "3":
             print(" Export Backup Function")
         elif choice == "4":
